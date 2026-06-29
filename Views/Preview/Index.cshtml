@@ -1,0 +1,136 @@
+﻿@model MarketPlace.Models.SalesReceipt
+@{
+    ViewData["Title"] = "Preview Page";
+
+    // 1. Prepare the JSON string safely in C# BEFORE the script runs
+    var salesItemsData = !string.IsNullOrEmpty(Model.SalesItemsJson)
+        ? Model.SalesItemsJson
+        : "[]";
+}
+
+<link rel="stylesheet" href="~/css/Preview.css" />
+
+<div class="preview-container">
+    <h2>PRESTIGE SOFT DRINK STORE</h2>
+    <hr />
+
+    <div class="receipt-info">
+        <div><strong>Invoice:</strong> @Model.InvoiceNumber</div>
+        <div><strong>Date:</strong> @Model.DateTime</div>
+        <div><strong>Customer:</strong> @Model.CustomerName</div>
+        <div><strong>Phone:</strong> @Model.CustomerPhone</div>
+        <div><strong>Address:</strong> @Model.CustomerAddress</div>
+    </div>
+
+    <hr />
+
+    <div id="itemsArea"></div>
+
+    <hr />
+
+    <h3>₦@Model.GrandTotal.ToString("N2")</h3>
+
+    <p>
+        @if (!string.IsNullOrEmpty(Model.AmountInWords))
+        {
+            @Model.AmountInWords
+        }
+        else
+        {
+            @($"Zero Naira Only")
+        }
+    </p>
+
+    <hr />
+
+    <div class="receipt-footer">
+        RECEIVED GOODS IN GOOD CONDITION<br>
+        NO REFUND AFTER PAYMENT<br><br>
+        <strong>THANK YOU</strong>
+    </div>
+</div>
+
+<div class="button-area">
+    <div class="text-center">
+        <button onclick="goBackToSales()" class="btn btn-secondary">Back</button>
+
+        <!-- Form to submit receipt to database -->
+        <form asp-controller="Sales" asp-action="SaveReceipt" method="post">
+            <input type="hidden" name="CustomerName" value="@Model.CustomerName" />
+            <input type="hidden" name="CustomerPhone" value="@Model.CustomerPhone" />
+            <input type="hidden" name="CustomerAddress" value="@Model.CustomerAddress" />
+            <input type="hidden" name="InvoiceNumber" value="@Model.InvoiceNumber" />
+            <input type="hidden" name="DateTime" value="@Model.DateTime" />
+            <input type="hidden" name="GrandTotal" value="@Model.GrandTotal" />
+            <input type="hidden" name="AmountInWords" value="@Model.AmountInWords" />
+
+            <!-- Pass the pre-validated variable -->
+            <input type="hidden" id="pSalesItems" name="SalesItemsJson" value="@salesItemsData" />
+
+            <button type="submit" class="btn btn-success">Save</button>
+        </form>
+
+        <button onclick="window.print()" class="btn btn-primary">Print</button>
+    </div>
+</div>
+
+<script>
+    // 2. Use the C# variable directly.
+    // Razor will insert the raw string content here.
+    let itemsJsonString = "@salesItemsData";
+
+    console.log("Received Items JSON:", itemsJsonString);
+
+    try {
+        // If the string contains HTML entities (like &quot;), replace them back to normal quotes
+        if (itemsJsonString.includes('&quot;')) {
+            itemsJsonString = itemsJsonString.replace(/&quot;/g, '"');
+            itemsJsonString = itemsJsonString.replace(/&#x20A6;/g, '₦');
+        }
+
+        let items = JSON.parse(itemsJsonString);
+
+        if (Array.isArray(items) && items.length > 0) {
+            let html = `
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            items.forEach(item => {
+                let desc = item.description || item.Description || "Unknown Item";
+                let qty = item.quantity || item.Quantity || "0";
+
+                // Clean total price string
+                let totalStr = (item.totalPrice || item.TotalPrice || "0").toString();
+                totalStr = totalStr.replace(/[^\d.]/g, '');
+                let totalVal = parseFloat(totalStr) || 0;
+
+                html += `
+                <tr>
+                    <td>${desc}</td>
+                    <td>${qty}</td>
+                    <td>₦${totalVal.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+                </tr>`;
+            });
+
+            html += "</tbody></table>";
+            document.getElementById("itemsArea").innerHTML = html;
+        } else {
+            document.getElementById("itemsArea").innerHTML = '<p class="text-muted">No items found.</p>';
+        }
+    } catch (e) {
+        console.error("Error parsing items on preview page:", e);
+        console.error("Raw JSON string was:", itemsJsonString);
+        document.getElementById("itemsArea").innerHTML = '<p class="text-danger">Failed to load items. Check console for details.</p>';
+    }
+
+    function goBackToSales() {
+        window.location.href = "/Sales";
+    }
+</script>

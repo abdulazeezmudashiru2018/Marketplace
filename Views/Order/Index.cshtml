@@ -1,0 +1,357 @@
+﻿@model IEnumerable<MarketPlace.Models.Product>
+@{
+    ViewData["Title"] = "Shop & Checkout";
+    var productsJson = System.Text.Json.JsonSerializer.Serialize(
+        Model.Select(p => new
+        {
+            id = p.Id,
+            name = p.ProductName,
+            price = p.ProductPrice,
+            image = p.ProductImage
+        }));
+}
+
+<script src="https://cdn.jsdelivr.net/npm/@@tailwindcss/browser@@4"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<link rel="stylesheet" href="~/css/order.css" />
+
+@Html.AntiForgeryToken()
+
+<div class="bg-slate-100 min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <section class="lg:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div class="bg-gradient-to-r from-orange-500 to-orange-400 px-6 py-5 flex items-center gap-3">
+                <div class="bg-white/20 rounded-xl p-2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /><path stroke-linecap="round" stroke-linejoin="round" d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" /></svg>
+                </div>
+                <div class="text-white">
+                    <h1 class="text-xl font-bold leading-tight">Products</h1>
+                    <p class="text-sm text-white/90" id="itemsAvailable">0 items available</p>
+                </div>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 scroll-area overflow-y-auto" style="max-height: 720px;" id="productGrid"></div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-5 flex items-center gap-3">
+                <div class="bg-white/20 rounded-xl p-2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v0a2 2 0 100 4 2 2 0 000-4zM9 19a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <div class="text-white">
+                    <h2 class="text-xl font-bold leading-tight">Cart &amp; Checkout</h2>
+                    <p class="text-sm text-white/90" id="cartCount">0 items in cart</p>
+                </div>
+            </div>
+
+            <div class="p-6 flex flex-col gap-5 scroll-area overflow-y-auto" style="max-height: 720px;">
+                <div id="cartArea">
+                    <div id="emptyCart" class="flex flex-col items-center justify-center py-8 text-center">
+                        <div class="bg-slate-100 rounded-full p-5 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v0a2 2 0 100 4 2 2 0 000-4zM9 19a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        </div>
+                        <p class="text-slate-500 font-medium">Your cart is empty</p>
+                        <p class="text-slate-400 text-sm">Add products to get started</p>
+                    </div>
+                    <div id="cartItems" class="flex flex-col gap-3"></div>
+
+                    <div id="cartTotals" class="hidden mt-4 pt-4 border-t border-slate-100 text-sm space-y-2">
+                        <div class="flex justify-between text-slate-600"><span>Subtotal</span><span id="subtotal">₦0.00</span></div>
+                        <div class="flex justify-between text-slate-600"><span>Shipping</span><span id="shipping">₦9.99</span></div>
+                        <div class="flex justify-between text-slate-600"><span>Tax (8%)</span><span id="tax">₦0.00</span></div>
+                        <div class="flex justify-between font-bold text-slate-900 text-base pt-1"><span>Total</span><span id="total">₦0.00</span></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" /></svg>
+                        <h3 class="font-bold text-slate-800">Shipping Details</h3>
+                    </div>
+                    <form id="checkoutForm" class="space-y-3" novalidate>
+                        <div>
+                            <input name="fullName" type="text" placeholder="Full Name *" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                            <p class="err hidden text-xs text-red-500 mt-1"></p>
+                        </div>
+                        <div>
+                            <input name="email" type="email" placeholder="Email Address *" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                            <p class="err hidden text-xs text-red-500 mt-1"></p>
+                        </div>
+                        <div>
+                            <input name="address" type="text" placeholder="Shipping Address *" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                            <p class="err hidden text-xs text-red-500 mt-1"></p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <input name="city" type="text" placeholder="City *" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                                <p class="err hidden text-xs text-red-500 mt-1"></p>
+                            </div>
+                            <div>
+                                <input name="zip" type="text" placeholder="ZIP Code *" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm" />
+                                <p class="err hidden text-xs text-red-500 mt-1"></p>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4H4V6h16v2zm0 4v6H4v-6h16z" /></svg>
+                                <h3 class="font-bold text-slate-800">Payment Method</h3>
+                            </div>
+                            <div class="space-y-3" id="paymentMethods">
+                                <label class="pay-option flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-indigo-500 bg-indigo-50 cursor-pointer transition">
+                                    <input type="radio" name="payment" value="Credit Card" checked class="accent-indigo-600 w-4 h-4" />
+                                    <span class="text-lg">💳</span><span class="font-semibold text-slate-800">Credit Card</span>
+                                </label>
+                                <label class="pay-option flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-slate-200 cursor-pointer transition">
+                                    <input type="radio" name="payment" value="Bank Transfer" class="accent-indigo-600 w-4 h-4" />
+                                    <span class="text-lg">🏦</span><span class="font-semibold text-slate-800">Bank Transfer</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="placeOrderBtn" disabled
+                                class="w-full mt-2 py-3.5 rounded-xl font-bold text-white bg-orange-300 cursor-not-allowed flex items-center justify-center gap-2 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v0a2 2 0 100 4 2 2 0 000-4zM9 19a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            <span id="orderBtnText">Place Order — ₦9.99</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 hidden toast bg-slate-900 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium z-50"></div>
+
+<div id="bankModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-5 flex items-center gap-3">
+            <span class="text-2xl">🏦</span>
+            <div class="text-white">
+                <h3 class="text-lg font-bold leading-tight">Bank Transfer</h3>
+                <p class="text-sm text-white/90">Pay to the account below</p>
+            </div>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-slate-600">Transfer <span id="bankAmount" class="font-bold text-slate-900">₦0.00</span> to:</p>
+            <div class="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-200">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <div>
+                        <p class="text-xs text-slate-500">Account Number</p>
+                        <p class="font-bold text-slate-900 text-lg tracking-wide" id="acctNumber">5524102976</p>
+                    </div>
+                    <button type="button" onclick="copyAcct()" class="text-indigo-600 text-sm font-semibold hover:underline">Copy</button>
+                </div>
+                <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500">Account Name</p>
+                    <p class="font-semibold text-slate-900">YAH-WAKEEL STORE</p>
+                </div>
+                <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500">Bank</p>
+                    <p class="font-semibold text-slate-900">MONIEPOINT</p>
+                </div>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed">
+                After making the transfer, click <b>"I've Paid"</b> below. Your order will be confirmed once payment is received.
+            </p>
+            <div class="flex gap-3 pt-1">
+                <button type="button" onclick="closeBankModal()" class="flex-1 py-3 rounded-xl font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">Cancel</button>
+                <button type="button" id="bankPaidBtn" class="flex-1 py-3 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition">I've Paid</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const products = @Html.Raw(productsJson);
+        const SHIPPING = 9.99, TAX_RATE = 0.08;
+        let cart = {};
+        const fmt = n => "₦" + n.toFixed(2);
+
+        const PAYSTACK_PUBLIC_KEY = "pk_test_2ebcd983293fd4f610748fdf89d7b6e21d4ef5a9";
+
+        function thumb(p, size) {
+        const cls = size === "sm" ? "w-10 h-10" : "w-12 h-12";
+        if (p.image) {
+        return `<img src="${p.image}" alt="${p.name}" class="${cls} object-cover rounded-lg" />`;
+        }
+        return `<div class="${cls} rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs">IMG</div>`;
+        }
+
+        function renderProducts() {
+        const grid = document.getElementById("productGrid");
+        document.getElementById("itemsAvailable").textContent = products.length + " items available";
+        grid.innerHTML = products.map(p => `
+        <div class="border border-slate-200 rounded-xl p-5 hover:shadow-md transition flex flex-col">
+        <div class="mb-3">${thumb(p)}</div>
+        <h3 class="font-bold text-slate-900 text-lg mb-3 flex-grow">${p.name}</h3>
+        <div class="flex items-center justify-between mt-auto">
+        <span class="text-xl font-bold text-slate-900">${fmt(p.price)}</span>
+        <button onclick="addToCart(${p.id})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>Add
+        </button>
+        </div>
+        </div>`).join("");
+        }
+
+        function addToCart(id) { cart[id] = (cart[id]||0)+1; renderCart(); const p = products.find(x=>x.id===id); showToast(`${p.name} added to cart`); }
+        function changeQty(id, d) { cart[id] = (cart[id]||0)+d; if (cart[id]<=0) delete cart[id]; renderCart(); }
+        function removeItem(id) { delete cart[id]; renderCart(); }
+        function cartEntries() { return Object.keys(cart).map(id => { const p = products.find(x=>x.id===+id); return Object.assign({}, p, { qty: cart[id] }); }); }
+
+        function renderCart() {
+        const entries = cartEntries();
+        const totalQty = entries.reduce((s,e)=>s+e.qty,0);
+        document.getElementById("cartCount").textContent = totalQty + (totalQty===1?" item in cart":" items in cart");
+        const empty = document.getElementById("emptyCart"), itemsBox = document.getElementById("cartItems"), totalsBox = document.getElementById("cartTotals");
+        if (entries.length === 0) { empty.classList.remove("hidden"); itemsBox.innerHTML=""; totalsBox.classList.add("hidden"); }
+        else {
+        empty.classList.add("hidden"); totalsBox.classList.remove("hidden");
+        itemsBox.innerHTML = entries.map(e => `
+        <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-3">
+        ${thumb(e, "sm")}
+        <div class="flex-grow min-w-0"><p class="font-semibold text-slate-800 text-sm truncate">${e.name}</p><p class="text-slate-500 text-xs">${fmt(e.price)} each</p></div>
+        <div class="flex items-center gap-2">
+        <button onclick="changeQty(${e.id},-1)" class="w-7 h-7 rounded-md bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-100">−</button>
+        <span class="w-5 text-center font-semibold text-sm">${e.qty}</span>
+        <button onclick="changeQty(${e.id},1)" class="w-7 h-7 rounded-md bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-100">+</button>
+        </div>
+        <button onclick="removeItem(${e.id})" class="text-slate-400 hover:text-red-500 ml-1"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg></button>
+        </div>`).join("");
+        }
+        const subtotal = entries.reduce((s,e)=>s+e.price*e.qty,0), shipping = entries.length?SHIPPING:0, tax = subtotal*TAX_RATE, total = subtotal+shipping+tax;
+        document.getElementById("subtotal").textContent = fmt(subtotal);
+        document.getElementById("shipping").textContent = fmt(shipping);
+        document.getElementById("tax").textContent = fmt(tax);
+        document.getElementById("total").textContent = fmt(total);
+        document.getElementById("orderBtnText").textContent = `Place Order — ${fmt(total)}`;
+        updateOrderButton();
+        }
+
+        document.getElementById("paymentMethods").addEventListener("change", () => {
+        document.querySelectorAll(".pay-option").forEach(opt => {
+        const checked = opt.querySelector("input").checked;
+        opt.classList.toggle("border-indigo-500", checked);
+        opt.classList.toggle("bg-indigo-50", checked);
+        opt.classList.toggle("border-slate-200", !checked);
+        });
+        });
+
+        function formValid() {
+        const f = document.getElementById("checkoutForm");
+        return f.fullName.value.trim() && /\S+@@\S+\.\S+/.test(f.email.value) && f.address.value.trim() && f.city.value.trim() && f.zip.value.trim();
+        }
+        function updateOrderButton() {
+        const btn = document.getElementById("placeOrderBtn");
+        const ok = cartEntries().length > 0 && formValid();
+        btn.disabled = !ok;
+        btn.classList.toggle("bg-orange-500", ok); btn.classList.toggle("hover:bg-orange-600", ok); btn.classList.toggle("cursor-pointer", ok);
+        btn.classList.toggle("bg-orange-300", !ok); btn.classList.toggle("cursor-not-allowed", !ok);
+        }
+        document.getElementById("checkoutForm").addEventListener("input", updateOrderButton);
+
+        function grandTotal() {
+        const entries = cartEntries();
+        const subtotal = entries.reduce((s,e)=>s+e.price*e.qty,0);
+        const shipping = entries.length ? SHIPPING : 0;
+        return subtotal + shipping + subtotal * TAX_RATE;
+        }
+
+        async function saveOrder(form, paymentRef) {
+        const payload = {
+        fullName: form.fullName.value, email: form.email.value, address: form.address.value,
+        city: form.city.value, zip: form.zip.value, payment: form.payment.value,
+        paymentReference: paymentRef || "",
+        items: cartEntries().map(e => ({ productId: e.id, name: e.name, qty: e.qty, price: e.price }))
+        };
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        try {
+        const res = await fetch('@Url.Action("PlaceOrder", "Order")', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+        body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+        showToast("✅ Order placed! Total " + data.total);
+        cart = {}; form.reset();
+        document.querySelectorAll(".err").forEach(el => el.classList.add("hidden"));
+        renderCart();
+        } else { showToast("⚠️ " + (data.message || "Could not place order.")); }
+        } catch (err) { showToast("⚠️ Network error. Please try again."); }
+        }
+
+        function payWithPaystack(form) {
+        const handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: form.email.value,
+        amount: Math.round(grandTotal() * 100),
+        currency: "NGN",
+        metadata: { custom_fields: [{ display_name: "Customer", variable_name: "customer", value: form.fullName.value }] },
+        callback: function (response) { saveOrder(form, response.reference); },
+        onClose: function () { showToast("⚠️ Payment window closed."); }
+        });
+        handler.openIframe();
+        }
+
+        function openBankModal(form) {
+        document.getElementById("bankAmount").textContent = fmt(grandTotal());
+        const modal = document.getElementById("bankModal");
+        modal.classList.remove("hidden"); modal.classList.add("flex");
+        document.getElementById("bankPaidBtn").onclick = function () {
+        closeBankModal();
+        saveOrder(form, "BANK-TRANSFER");
+        };
+        }
+        function closeBankModal() {
+        const modal = document.getElementById("bankModal");
+        modal.classList.add("hidden"); modal.classList.remove("flex");
+        }
+        function copyAcct() {
+        navigator.clipboard.writeText(document.getElementById("acctNumber").textContent.trim());
+        showToast("Account number copied!");
+        }
+
+        document.getElementById("checkoutForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        let valid = true;
+        this.querySelectorAll("input[type=text],input[type=email]").forEach(inp => {
+        const err = inp.parentElement.querySelector(".err"); let msg = "";
+        if (inp.name === "email") { if (!/\S+@@\S+\.\S+/.test(inp.value)) msg = "Enter a valid email"; }
+        else if (!inp.value.trim()) msg = "This field is required";
+        if (msg) { valid = false; inp.classList.add("border-red-400"); if (err){ err.textContent=msg; err.classList.remove("hidden"); } }
+        else { inp.classList.remove("border-red-400"); if (err) err.classList.add("hidden"); }
+        });
+        if (!valid || cartEntries().length === 0) return;
+
+        if (this.payment.value === "Credit Card") {
+        payWithPaystack(this);
+        } else if (this.payment.value === "Bank Transfer") {
+        openBankModal(this);
+        }
+        });
+
+        let toastTimer;
+        function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg; t.classList.remove("hidden");
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add("hidden"), 2500);
+        }
+
+        renderProducts();
+        renderCart();
+    </script>
+}
+<script>
+    function togglePaymentDetails() {
+    const bankRadio = document.querySelector('input[value="BankTransfer"]');
+    const bankDetails = document.getElementById('bankDetails');
+
+    if (bankRadio.checked) {
+    bankDetails.classList.remove('hidden');
+    } else {
+    bankDetails.classList.add('hidden');
+    }
+    }
+</script>

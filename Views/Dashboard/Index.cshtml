@@ -1,0 +1,304 @@
+﻿@{
+    ViewData["Title"] = "Dashboard page";
+}
+
+<div class="dashboard-page">
+    <div class="container-fluid px-4 py-3">
+
+        <nav class="dashboard-navbar">
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="nav-item">
+
+                <i class="bi bi-house-fill"></i>
+
+                <span>Home</span>
+
+            </a>
+
+            <a asp-controller="Home"
+               asp-action="Privacy"
+               class="nav-item">
+
+                <i class="bi bi-shield-lock-fill"></i>
+
+                <span>Privacy</span>
+
+            </a>
+
+            <a asp-controller="Sales"
+               asp-action="Index"
+               class="nav-item">
+
+                <i class="bi bi-plus-circle-fill"></i>
+
+                <span>Add Sales</span>
+
+            </a>
+
+            <a asp-controller="AddGoods"
+               asp-action="Index"
+               class="nav-item">
+
+                <i class="bi bi-table"></i>
+
+                <span>Add Goods</span>
+
+            </a>
+
+            <a asp-controller="Customer"
+               asp-action="Index"
+               class="nav-item">
+
+                <i class="bi bi-people-fill"></i>
+
+                <span>Customers history</span>
+
+            </a>
+            <!-- PAYMENT button -->
+            <a asp-controller="Order"
+               asp-action="Payments"
+               class="nav-item">
+                <i class="bi bi-coin"></i>
+                <span>Payment</span>
+            </a>
+
+            <!-- NOTIFICATION button -->
+            <a asp-controller="Order"
+               asp-action="Notifications"
+               class="nav-item position-relative">
+                <i class="bi bi-bell-fill"></i>
+                <span class="notification-badge">@(ViewBag.OrderCount ?? "")</span>
+            </a>
+
+        </nav>
+
+        <div class="row mt-4">
+
+            <!-- Highest Sales -->
+
+            <div class="col-lg-3 col-md-6 mb-4">
+
+                <div class="stat-card highest">
+                    <span></span>
+                    <h6>Highest Sales</h6>
+
+                    <h2>$15,200</h2>
+
+                    <i class="bi bi-graph-up-arrow stat-icon"></i>
+
+                </div>
+
+            </div>
+
+            <!-- Lowest Sales -->
+
+            <div class="col-lg-3 col-md-6 mb-4">
+
+                <div class="stat-card lowest">
+                    <span></span>
+                    <h6>Lowest Sales</h6>
+
+                    <h2>$2,350</h2>
+
+                    <i class="bi bi-graph-down-arrow stat-icon"></i>
+
+                </div>
+
+            </div>
+
+            <!-- Total Sales -->
+
+            <div class="col-lg-3 col-md-6 mb-4">
+
+                <div class="stat-card total">
+                    <span></span>
+                    <h6>Total Sales</h6>
+
+                    <h2>$56,890</h2>
+
+                    <i class="bi bi-cash-stack stat-icon"></i>
+
+                </div>
+
+            </div>
+
+            <!-- Wallet -->
+
+            <div class="col-lg-3 col-md-6 mb-4">
+
+                <div class="stat-card wallet">
+                    <span></span>
+                    <h6>Wallet Balance</h6>
+
+                    <h2>$8,250</h2>
+
+                    <i class="bi bi-wallet2 stat-icon"></i>
+
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="row mt-4">
+
+                <!-- Sales Analytics -->
+
+                <div class="col-lg-8 mb-4">
+
+                    <div class="glass-panel">
+
+                        <h4 class="panel-title">
+
+                            <i class="bi bi-bar-chart-line-fill"></i>
+
+                            Sales Analytics
+
+                        </h4>
+
+                        <div class="chart-placeholder">
+
+                            📈 Sales Chart Coming Soon
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Top Customers -->
+
+                <div class="col-lg-4 mb-4">
+
+                    <div class="glass-panel">
+
+                        <h4 class="panel-title">
+
+                            <i class="bi bi-people-fill"></i>
+
+                            Top Customers
+
+                        </h4>
+
+                        <ul class="customer-list">
+
+                            <li>👤 John Smith <span>$8,500</span></li>
+
+                            <li>👤 Mary Johnson <span>$7,900</span></li>
+
+                            <li>👤 David Brown <span>$6,250</span></li>
+
+                            <li>👤 Sarah Wilson <span>$5,800</span></li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            <div class="row mt-4">
+
+                <!-- Recent Sales -->
+
+                <div class="col-lg-9">
+
+                    <div class="glass-panel recent-sales-panel">
+
+                        <h4 class="panel-title">
+
+                            <i class="bi bi-table"></i>
+
+                            Recent Sales
+
+                        </h4>
+
+                        <table class="table table-borderless">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Customer</th>
+
+                                    <th>Product</th>
+
+                                    <th>Amount</th>
+
+                                    <th>Status</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>John Smith</td>
+
+                                    <td>Laptop</td>
+
+                                    <td>$1,250</td>
+
+                                    <td><span class="badge bg-success">Completed</span></td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>Mary Johnson</td>
+
+                                    <td>Phone</td>
+
+                                    <td>$850</td>
+
+                                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>David Brown</td>
+
+                                    <td>Monitor</td>
+
+                                    <td>$450</td>
+
+                                    <td><span class="badge bg-primary">Paid</span></td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <!-- GO TO SALE -->
+
+                <div class="col-lg-3 d-flex align-items-center justify-content-center">
+
+                    <a asp-controller="Sales"
+                       asp-action="Index"
+                       class="btn btn-danger btn-lg">
+
+                        GO-TO-SALE
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+</div>

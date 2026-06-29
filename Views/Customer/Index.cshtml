@@ -1,0 +1,73 @@
+﻿@model IEnumerable<MarketPlace.Models.SalesHistory>
+@{
+    ViewData["Title"] = "Customer Management";
+}
+
+<div class="AddGoods-container">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Customers Management</h2>
+        <h4 id="currentDateTime"></h4>
+    </div>
+
+    <!-- Company Header (Optional styling from your original page) -->
+    <div class="company-header text-center mb-4 border-bottom pb-2">
+        <div>
+            <h1>PRESTIGE</h1>
+            <h2>SOFT DRINK STORE</h2>
+            <p class="text-muted">Dealer in all kinds of soft drinks...</p>
+        </div>
+    </div>
+
+    <!-- Main Table -->
+    @if (Model != null && Model.Any())
+    {
+        <h3 class="mb-3">Customer History</h3>
+
+        <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model)
+                {
+                    <tr>
+                        <td>@customer.CustomerName</td>
+                        <td>@customer.CustomerPhone</td>
+                        <td>@customer.CustomerAddress</td>
+                        <td>
+                            <!-- Correct link to Details view -->
+                            <a asp-controller="Customer"
+                               asp-action="Details"
+                               asp-route-phone="@customer.CustomerPhone"
+                               class="btn btn-primary btn-sm w-100">
+                                📋 View Receipts
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-info text-center mt-5">
+            No customers found yet.
+        </div>
+    }
+</div>
+
+<script>
+    function updateClock(){
+        document.getElementById("currentDateTime").innerHTML =
+            new Date().toLocaleString();
+    }
+    setInterval(updateClock,1000);
+    updateClock();
+</script>

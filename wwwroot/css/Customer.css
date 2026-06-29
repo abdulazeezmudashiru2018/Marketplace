@@ -1,0 +1,45 @@
+﻿
+.AddGoods-container {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,.1);
+}
+
+
+.company-title {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+    .company-title h1 {
+        font-size: 70px;
+        font-weight: 900;
+        color: #173B8A;
+        letter-spacing: 3px;
+        margin-bottom: -20px;
+        margin-top: -60px;
+    }
+
+    .company-title h2 {
+        font-size: 50px;
+        font-weight: 400;
+        color: #B11A1A;
+        letter-spacing: 2px;
+    }
+
+    .company-title p {
+        font-size: 24px;
+        font-weight: 600;
+        color: #222;
+    }
+
+.dealer-text {
+    text-align: center;
+    color: #222;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 35px;
+    margin-bottom: -15px;
+}

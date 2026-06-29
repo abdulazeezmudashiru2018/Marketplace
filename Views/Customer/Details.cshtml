@@ -1,0 +1,156 @@
+﻿@model IEnumerable<MarketPlace.Models.SalesHistory>
+@{
+    ViewData["Title"] = "Customer Receipts Detail";
+    // Required for JavaScript encoding safety
+    var jsonEncoder = System.Text.Encodings.Web.JavaScriptEncoder.Default;
+}
+
+<div class="container mt-4">
+
+    <a asp-action="Index" class="btn btn-secondary mb-4">
+        ← Back to Customers
+    </a>
+
+    @if (Model != null && Model.Any())
+    {
+        <h3 class="mb-4">Saved Receipts (@Model.Count() total)</h3>
+
+        foreach (var receipt in Model)
+        {
+            var containerId = $"receipt-{receipt.Id}";
+
+            <div class="card mb-4 shadow-sm border">
+                <div class="card-body p-4">
+
+                    <!-- Receipt Header -->
+                    <h5 class="fw-bold mb-3">
+                        PRESTIGE SOFT DRINK STORE
+                        <span class="float-end badge bg-secondary fs-6">@receipt.InvoiceNumber</span>
+                    </h5>
+
+                    <!-- Customer Info -->
+                    <div class="row small mb-3">
+                        <div class="col-md-6">
+                            <strong>Date:</strong> @receipt.DateTime<br>
+                            <strong>Name:</strong> @receipt.CustomerName
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <strong>Phone:</strong> @receipt.CustomerPhone<br>
+                            <strong>Address:</strong> @receipt.CustomerAddress
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <!-- ITEMS TABLE -->
+                    @if (!string.IsNullOrEmpty(receipt.SalesItemsJson))
+                    {
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item Description</th>
+                                    <th width="60" class="text-center">Qty</th>
+                                    <th width="120" class="text-end">Total (₦)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="@containerId">
+                                <tr><td colspan="3" class="text-center py-3"><span class="spinner-border spinner-border-sm"></span> Loading items...</td></tr>
+                            </tbody>
+                        </table>
+
+                        /*
+                           ✅ SAFE PARSING SCRIPT - Handles all encoding issues
+                           Using IHtmlHelper to properly encode JSON for JS context
+                        */
+                        <script>
+                                        (function(){
+                                            try {
+                                                /*
+                                                   Triple safety net:
+                                                   1. Razor encodes quotes for HTML (&quot;)
+                                                   2. We decode back to proper JSON
+                                                   3. Then parse safely
+                                                */
+                                                var rawString = "@jsonEncoder.Encode(receipt.SalesItemsJson ?? "[]")";
+
+                                                // Fix any remaining encoded characters that shouldn't be there
+                                                rawString = rawString.replace(/&quot;/g, '"');
+                                                rawString = rawString.replace(/&#x20A6;/g, '₦');
+                                                rawString = rawString.replace(/&lt;/g, '<');
+                                                rawString = rawString.replace(/&gt;/g, '>');
+
+                                                console.log('Receipt #@receipt.Id Raw:', rawString.substring(0, 80));
+
+                                                var items = JSON.parse(rawString);
+                                                var tbody = document.getElementById("@containerId");
+                                                tbody.innerHTML = ""; // Clear loading spinner
+
+                                                if(Array.isArray(items) && items.length > 0) {
+                                                    items.forEach(function(item){
+                                                        var desc = item.description || item.Description || "";
+                                                        var qty = item.quantity || item.Quantity || "0";
+
+                                                        // Extract numeric value safely
+                                                        var totalStr = (item.totalPrice || item.TotalPrice || "0").toString();
+                                                        totalStr = totalStr.replace(/[^\d.]/g,''); // Remove ₦ and commas
+                                                        var totalVal = parseFloat(totalStr) || 0;
+
+                                                        var row = tbody.insertRow();
+
+                                                        row.innerHTML = `
+                                                            <td>${desc}</td>
+                                                            <td class="text-center">${qty}</td>
+                                                            <td class="text-end">₦${totalVal.toLocaleString('en-NG', {minimumFractionDigits: 2})}</td>`;
+                                                    });
+
+                                                    // Add footer total row after loop
+                                                    var totalRow = tbody.insertRow();
+                                                    totalRow.innerHTML = `<td colspan="2" class="fw-bold text-end">Grand Total:</td>
+                                                                                 <td class="fw-bold text-success text-end">@receipt.GrandTotal.ToString("N2")</td>`;
+                                                } else {
+                                                    tbody.innerHTML = '<tr><td colspan="3" class="text-muted text-center py-3">No line items found in this record.</td></tr>';
+                                                }
+                                            } catch(e) {
+                                                console.error('Parse Error:', e);
+                                                document.getElementById("@containerId").innerHTML =
+                                                    '<tr><td colspan="3" class="text-danger text-center">Error loading items data.</td></tr>';
+                                            }
+                                        })();
+                        </script>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning small">No item details saved.</div>
+                    }
+
+                    <hr />
+
+                    <!-- Total & Footer -->
+                    <div class="row align-items-end mt-2">
+                        <div class="col-md-8">
+                            <h4 class="text-success fw-bold fs-2 mb-0">
+                                ₦@receipt.GrandTotal.ToString("N2")
+                            </h4>
+                            <small class="text-muted fst-italic d-block mt-1">@receipt.AmountInWords</small>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="small text-muted mb-1 text-end">
+                                RECEIVED GOODS IN GOOD CONDITION<br>
+                                NO REFUND AFTER PAYMENT
+                            </p>
+                            <p class="fw-bold text-center mt-2">THANK YOU</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info text-center py-5 mt-5">
+            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+            No sales records found for this customer yet.
+        </div>
+    }
+</div>

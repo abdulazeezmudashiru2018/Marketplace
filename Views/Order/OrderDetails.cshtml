@@ -1,0 +1,57 @@
+﻿@model MarketPlace.Models.Order
+@{
+    ViewData["Title"] = "Order Details";
+}
+<div class="container my-4" style="max-width: 700px;">
+    <a asp-controller="Order" asp-action="Notifications" class="btn btn-link px-0 mb-2">← Back to Notifications</a>
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">🛒 Order #@Model.Id — @Model.FullName</h4>
+        </div>
+        <div class="card-body">
+            <h6 class="text-muted">Shipping To</h6>
+            <p class="mb-1"><strong>@Model.FullName</strong> (@Model.Email)</p>
+            <p class="mb-3">@Model.Address, @Model.City @Model.Zip</p>
+            <h6 class="text-muted">Cart Items</h6>
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Unit Price</th><th class="text-end">Subtotal</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.Name</td>
+                            <td class="text-center">@item.Qty</td>
+                            <td class="text-end">₦@item.Price.ToString("N2")</td>
+                            <td class="text-end">₦@((item.Price * item.Qty).ToString("N2"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-between border-top pt-2">
+                <span class="text-muted">Subtotal</span><span>₦@Model.Subtotal.ToString("N2")</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Shipping</span><span>₦@Model.Shipping.ToString("N2")</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Tax</span><span>₦@Model.Tax.ToString("N2")</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2">
+                <span>Total</span><span>₦@Model.Total.ToString("N2")</span>
+            </div>
+            <div class="mt-3">
+                <span class="text-muted">Payment Method:</span> <strong>@Model.Payment</strong>
+                @if (Model.IsPaid)
+                {
+                    <span class="badge bg-success ms-2">Paid</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark ms-2">Pending</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>

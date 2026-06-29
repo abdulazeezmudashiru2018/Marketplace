@@ -1,0 +1,59 @@
+﻿@model IEnumerable<MarketPlace.Models.Order>
+@{
+    ViewData["Title"] = "Payments";
+}
+<div class="container my-4">
+    <h2 class="mb-1 fw-bold">💰 Payments</h2>
+    <p class="text-muted">All orders and their payment status. Click a row to view the receipt.</p>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No payments yet.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Customer</th>
+                        <th>Method</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in Model)
+                    {
+                        <tr>
+                            <td>@o.Id</td>
+                            <td>
+                                <div class="fw-semibold">@o.FullName</div>
+                                <div class="text-muted small">@o.Email</div>
+                            </td>
+                            <td>@o.Payment</td>
+                            <td class="fw-semibold">₦@o.Total.ToString("N2")</td>
+                            <td>
+                                @if (o.IsPaid)
+                                {
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                }
+                            </td>
+                            <td class="text-muted small">@o.CreatedAt.ToString("dd MMM yyyy, h:mm tt")</td>
+                            <td>
+                                <a asp-controller="Order" asp-action="PaymentDetails" asp-route-id="@o.Id"
+                                   class="btn btn-sm btn-outline-primary">View Receipt</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

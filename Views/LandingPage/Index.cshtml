@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Landing Page";
+}
+
+<div class="text-center mt-5">
+
+    <h1>Prestige Soft Drinks Store</h1>
+    <p>details: <a href="https://learn.microsoft.com/aspnet/core">dealler in all kinks of all soft drinks</a>.</p>
+
+
+
+
+   
+
+    <br />
+
+    <a asp-controller="Order"
+       asp-action="Index"
+       class="btn btn-primary m-2">
+        Place Order
+    </a>
+
+    <a asp-controller="Account"
+       asp-action="Login"
+       class="btn btn-success m-2">
+        Login
+    </a>
+
+    <a asp-controller="Account"
+       asp-action="Register"
+       class="btn btn-warning m-2">
+        Register
+    </a>
+    <p>Please choose an option above.</p>
+
+</div>

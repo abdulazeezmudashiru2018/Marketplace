@@ -1,0 +1,645 @@
+﻿@model List<MarketPlace.Models.Product>
+@{
+    ViewData["Title"] = "Sales Page";
+}
+ 
+   <!-- Invoice Area -->
+
+  <div class="invoice-container">
+
+
+    <!-- Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <button class="btn btn-primary"
+                onclick="openGoods()">
+
+            <i class="bi bi-box-seam"></i>
+
+            Goods
+
+        </button>
+
+        <h4 id="currentDateTime"></h4>
+
+        <div>
+
+            <h5 id="invoiceNumber"></h5>
+
+        </div>
+
+
+    </div>
+    
+    <div class="company-header">
+
+        <div class="company-logo">
+
+            🥤
+
+        </div>
+
+        <div class="company-title">
+
+            <h1>PRESTIGE</h1>
+
+            <h2>SOFT DRINK STORE</h2>
+
+            <p class="company-description">
+
+                Dealer in all kinds of soft drinks such as
+                Coke, Fearless, Malt, Viju Milk,
+                Yogurt etc.
+                Both Wholesale and Retail.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="company-contact">
+
+        <p>
+
+            <i class="bi bi-geo-alt-fill"></i>
+
+            Formal Dave Mercy Clinic,
+            Idiagbo,
+            Jebba,
+            Kwara State.
+
+        </p>
+
+        <p>
+
+            <i class="bi bi-telephone-fill"></i>
+
+            08000000000
+
+        </p>
+
+    </div>
+
+    
+   <div class="customer-section">
+        <div class="mb-3">
+
+            <label>
+
+                Customer Name
+
+            </label>
+
+            <input type="text"
+                   id="customerName"
+                   class="form-control"
+                   list="customerList"
+                   oninput="fillCustomerDetails()">
+
+            <datalist id="customerList">
+            </datalist>
+
+        </div>
+    <div class="mb-3">
+
+        <label>
+
+            Customer Address
+
+        </label>
+
+        <input type="text"
+               id="customerAddress"
+               class="form-control">
+
+    </div>
+
+    <div class="mb-4">
+
+        <label>
+
+            Customer Phone Number
+
+        </label>
+
+        <input type="text"
+               id="customerPhone"
+               maxlength="11"
+               class="form-control">
+
+    </div>
+
+    </div>
+
+
+    <div class="invoice-title">
+
+        SALES INVOICE
+
+    </div>
+
+
+    <table class="table table-bordered table-hover text-center" id="salesTable">
+
+        <thead class="table-primary">
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Description</th>
+
+                <th width="120">Quantity</th>
+
+                <th>Unit Price</th>
+
+                <th>Total Price</th>
+
+                <th width="90">Delete</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+        </tbody>
+
+    </table>
+
+    <div class="total-box">
+
+        <div class="total-header">
+
+            TOTAL PRICE
+
+        </div>
+
+        <div class="total-body">
+
+            ₦<span id="grandTotal">0</span>
+
+        </div>
+
+    </div>
+
+
+    <div class="invoice-footer">
+
+        <div class="received-box">
+
+            <div>
+
+                <strong>
+                    RECEIVED THIS GOODS IN GOOD CONDITION
+                </strong>
+
+                <br>
+
+                <strong>
+                    NO REFUND OF MONEY AFTER PAYMENT
+                </strong>
+
+            </div>
+
+            <div class="received-icon">
+
+                📦
+
+            </div>
+
+        </div>
+
+    </div>
+
+    
+    <div class="amount-words-box">
+
+        <strong>
+            AMOUNT IN WORDS:
+        </strong>
+
+        <span id="amountWords">
+            Zero Naira Only
+        </span>
+
+    </div>
+
+
+    <div class="thanks-box">
+
+        THANKS FOR YOUR PATRONAGE
+
+    </div>
+
+
+    <div class="text-center mt-5">
+        <button class="btn btn-primary btn-lg"
+                onclick="goPreview()">
+
+            <i class="bi bi-file-earmark-text"></i>
+
+            Preview
+
+        </button>
+
+    </div>
+
+
+    <form id="previewForm"
+          method="post"
+          asp-controller="Preview"
+          asp-action="Index">
+
+        <input type="hidden" id="pCustomerName" name="CustomerName" />
+
+        <input type="hidden" id="pCustomerAddress" name="CustomerAddress" />
+
+        <input type="hidden" id="pCustomerPhone" name="CustomerPhone" />
+
+        <input type="hidden" id="pInvoiceNumber" name="InvoiceNumber" />
+
+        <input type="hidden" id="pDateTime" name="DateTime" />
+
+        <input type="hidden" id="pGrandTotal" name="GrandTotal" />
+
+        <input type="hidden" id="pAmountWords" name="AmountInWords" />
+
+        <input type="hidden" id="pSalesItems" name="SalesItemsJson" />
+
+    </form>
+
+
+  </div>
+
+
+
+   <!-- Goods Panel -->
+ <div id="goodsPanel" class="goods-panel">
+
+    <div class="goods-header">
+
+        <h3>GOODS</h3>
+
+        <button class="btn btn-danger"
+                onclick="closeGoods()">
+
+            X
+
+        </button>
+
+
+        <div class="goods-search">
+
+            <div class="input-group p-2">
+
+                <span class="input-group-text">
+                    🔍
+                </span>
+
+                <input type="text"
+                       id="goodsSearch"
+                       class="form-control"
+                       placeholder="Search Product..."
+                       onkeyup="searchGoods()">
+
+            </div>
+
+        </div>
+
+
+    </div>
+    <div class="goods-list" id="goodsList">
+
+        @foreach (var product in Model)
+        {
+            <div class="goods-item"
+                 onclick="addProduct(this.dataset.name, Number(this.dataset.price))"
+                 data-name="@product.ProductName"
+                 data-price="@product.ProductPrice">
+
+                <img src="@product.ProductImage"
+                     style="width:30px;height:30px;object-fit:cover;border-radius:4px;margin-right:6px;" />
+
+                @product.ProductName
+
+                <span>₦@product.ProductPrice</span>
+
+            </div>
+        }
+
+    </div>
+
+
+ </div>
+<script>
+    // --- GLOBAL VARIABLES ---
+    let rowNumber = 1;
+    const products = {};
+
+    // Populate product map on page load
+    document.querySelectorAll("#goodsList .goods-item").forEach(function (item) {
+        let name = item.dataset.name.trim().toLowerCase();
+        let price = parseFloat(item.dataset.price);
+        products[name] = price;
+    });
+
+    // --- UTILITY FUNCTIONS ---
+    function openGoods() {
+        document.getElementById("goodsPanel").style.left = "0";
+    }
+
+    function closeGoods() {
+        document.getElementById("goodsPanel").style.left = "-350px";
+    }
+
+    function updateClock() {
+        document.getElementById("currentDateTime").innerHTML = new Date().toLocaleString();
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function formatMoney(amount) {
+        return amount.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+    }
+
+    function numberToWords(num) {
+        const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+        const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+        if (num === 0) return "Zero Naira Only";
+
+        function convert(n) {
+            if (n < 20) return ones[n];
+            if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "");
+            if (n < 1000) return ones[Math.floor(n / 100)] + " Hundred " + convert(n % 100);
+            if (n < 1000000) return convert(Math.floor(n / 1000)) + " Thousand " + convert(n % 1000);
+            if (n < 1000000000) return convert(Math.floor(n / 1000000)) + " Million " + convert(n % 1000000);
+            return "";
+        }
+
+        return convert(num) + " Naira Only";
+    }
+
+    // --- SALES TABLE LOGIC ---
+    function addProduct(name, price) {
+        let table = document.getElementById("salesTable").getElementsByTagName("tbody")[0];
+        let rows = table.rows;
+
+        // Check if product already exists
+        for (let i = 0; i < rows.length; i++) {
+            let productName = rows[i].querySelector(".description-input").value.toLowerCase();
+            if (productName === name) {
+                let qtyInput = rows[i].querySelector(".qty-value");
+                let qty = parseInt(qtyInput.value) || 0;
+                qty++;
+                qtyInput.value = qty;
+                rows[i].cells[4].innerHTML = "₦" + (qty * price).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+                calculateGrandTotal();
+                return;
+            }
+        }
+
+        let row = table.insertRow();
+        rowNumber++;
+
+        row.insertCell(0).innerHTML = rowNumber - 1;
+
+        row.insertCell(1).innerHTML = `<input type="text" class="form-control description-input" value="${name}" onchange="updateDescription(this)">`;
+
+        row.insertCell(2).innerHTML = `
+            <div class="qty-box">
+                <div class="qty-buttons">
+                    <button class="qty-up" onclick="increaseQty(this)">▲</button>
+                    <button class="qty-down" onclick="decreaseQty(this)">▼</button>
+                </div>
+                <input type="text" class="qty-value" value="0" maxlength="5" inputmode="numeric" oninput="limitQty(this)" onchange="manualQty(this)">
+            </div>`;
+
+        row.insertCell(3).innerHTML = "₦" + price.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+        row.insertCell(4).innerHTML = "₦0.00";
+        row.insertCell(5).innerHTML = `<button class="btn btn-danger btn-sm" onclick="deleteRow(this)">X</button>`;
+
+        calculateGrandTotal();
+    }
+
+    function deleteRow(button) {
+        let row = button.closest("tr");
+        row.remove();
+        calculateGrandTotal();
+    }
+
+    function calculateGrandTotal() {
+        let rows = document.getElementById("salesTable").getElementsByTagName("tbody")[0].rows;
+        let total = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+            let valueStr = rows[i].cells[4].innerText.replace(/[^\d.]/g, '');
+            let value = parseFloat(valueStr) || 0;
+            total += value;
+        }
+
+        document.getElementById("grandTotal").innerHTML = total.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+        document.getElementById("amountWords").innerHTML = numberToWords(total);
+    }
+
+    function increaseQty(button) {
+        let qtyInput = button.parentElement.nextElementSibling;
+        let row = button.closest("tr");
+        let priceStr = row.cells[3].innerText.replace(/[^\d.]/g, '');
+        let price = parseFloat(priceStr) || 0;
+        let qty = parseInt(qtyInput.value) || 0;
+
+        if (qty < 99999) {
+            qty++;
+            qtyInput.value = qty;
+            row.cells[4].innerHTML = "₦" + (qty * price).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+            calculateGrandTotal();
+        }
+    }
+
+    function decreaseQty(button) {
+        let qtyInput = button.parentElement.nextElementSibling;
+        let row = button.closest("tr");
+        let priceStr = row.cells[3].innerText.replace(/[^\d.]/g, '');
+        let price = parseFloat(priceStr) || 0;
+        let qty = parseInt(qtyInput.value) || 0;
+
+        if (qty > 0) {
+            qty--;
+            qtyInput.value = qty;
+            row.cells[4].innerHTML = "₦" + (qty * price).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+            calculateGrandTotal();
+        } else {
+            row.remove();
+            calculateGrandTotal();
+        }
+    }
+
+    function manualQty(input) {
+        let row = input.closest("tr");
+        let priceStr = row.cells[3].innerText.replace(/[^\d.]/g, '');
+        let price = parseFloat(priceStr) || 0;
+        let qty = parseInt(input.value) || 0;
+
+        if (isNaN(qty)) { qty = 0; input.value = 0; }
+        if (qty > 99999) { qty = 99999; input.value = 99999; }
+
+        row.cells[4].innerHTML = "₦" + (qty * price).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+        calculateGrandTotal();
+    }
+
+    function limitQty(input) {
+        input.value = input.value.replace(/\D/g, "");
+        if (input.value.length > 5) input.value = input.value.substring(0, 5);
+        manualQty(input);
+    }
+
+    function updateDescription(input) {
+        let row = input.closest("tr");
+        let product = input.value.trim().toLowerCase();
+        let rows = document.getElementById("salesTable").getElementsByTagName("tbody")[0].rows;
+
+        for (let i = 0; i < rows.length; i++) {
+            let currentInput = rows[i].querySelector(".description-input");
+            if (currentInput !== input) {
+                let existingProduct = currentInput.value.trim().toLowerCase();
+                if (existingProduct === product) {
+                    alert("Item already exists!");
+                    input.focus();
+                    return;
+                }
+            }
+        }
+
+        if (products[product] !== undefined) {
+            let price = products[product];
+            let qtyInput = row.querySelector(".qty-value");
+            qtyInput.value = 0;
+            row.cells[3].innerHTML = "₦" + price.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+            row.cells[4].innerHTML = "₦0.00";
+            calculateGrandTotal();
+        } else {
+            // Optionally alert or leave as custom
+        }
+    }
+
+    function searchGoods() {
+        let input = document.getElementById("goodsSearch");
+        let filter = input.value.toLowerCase();
+        let items = document.getElementsByClassName("goods-item");
+
+        for (let i = 0; i < items.length; i++) {
+            let text = items[i].innerText.toLowerCase();
+            if (text.indexOf(filter) > -1) {
+                items[i].style.display = "";
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+    }
+
+    function generateInvoiceNumber() {
+        let today = new Date();
+        let year = today.getFullYear();
+        let month = String(today.getMonth() + 1).padStart(2, '0');
+        let day = String(today.getDate()).padStart(2, '0');
+        let random = Math.floor(Math.random() * 9000) + 1000;
+        document.getElementById("invoiceNumber").innerHTML = "Invoice No : INV-" + year + month + day + "-" + random;
+    }
+
+    // --- DATABASE INTEGRATION ---
+    async function loadCustomersFromDB() {
+        try {
+            const response = await fetch('/Customer/GetUniqueCustomers');
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const customers = await response.json();
+            window.customerCache = {};
+
+            let list = document.getElementById("customerList");
+            list.innerHTML = "";
+
+            customers.sort((a, b) => a.Name.localeCompare(b.Name)).forEach(customer => {
+                let option = document.createElement("option");
+                option.value = customer.Name;
+                window.customerCache[customer.Name] = customer;
+                list.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Error loading customers:", error);
+        }
+    }
+
+    function fillCustomerDetails() {
+        let customerNameInput = document.getElementById("customerName").value.trim();
+        if (window.customerCache && window.customerCache[customerNameInput]) {
+            let customer = window.customerCache[customerNameInput];
+            document.getElementById("customerPhone").value = customer.Phone;
+            document.getElementById("customerAddress").value = customer.Address;
+        }
+    }
+
+    function initPage() {
+        generateInvoiceNumber();
+        loadCustomersFromDB();
+    }
+        function goPreview() {
+        const rows = document.querySelectorAll("#salesTable tbody tr");
+        if (rows.length === 0) {
+            alert("Please add at least one item.");
+            return;
+        }
+        if (!document.getElementById("customerName").value.trim()) {
+            alert("Please enter a Customer Name.");
+            return;
+        }
+
+        document.getElementById("pCustomerName").value = document.getElementById("customerName").value;
+        document.getElementById("pCustomerAddress").value = document.getElementById("customerAddress").value;
+        document.getElementById("pCustomerPhone").value = document.getElementById("customerPhone").value;
+        document.getElementById("pInvoiceNumber").value = document.getElementById("invoiceNumber").innerText;
+        document.getElementById("pDateTime").value = document.getElementById("currentDateTime").innerText;
+
+        let grandTotalText = document.getElementById("grandTotal").innerText.replace(/[^\d.]/g, '');
+        document.getElementById("pGrandTotal").value = grandTotalText;
+        document.getElementById("pAmountWords").value = document.getElementById("amountWords").innerText;
+
+        let jsonItems = [];
+
+        // Helper function to escape strings for JSON
+        function escapeForJSON(str) {
+            if (typeof str !== 'string') return str;
+            return str.replace(/\\/g, '\\\\')   // Escape backslashes first
+                      .replace(/"/g, '\\"')     // Then escape double quotes
+                      .replace(/\n/g, '\\n')    // New lines
+                      .replace(/\r/g, '\\r');   // Carriage returns
+        }
+
+        rows.forEach(function(row) {
+            let description = row.querySelector(".description-input").value;
+            let quantity = row.querySelector(".qty-value").value;
+            let unitPrice = row.cells[3].innerText;
+            let totalPrice = row.cells[4].innerText;
+
+            jsonItems.push({
+                description: escapeForJSON(description),
+                quantity: escapeForJSON(quantity),
+                unitPrice: escapeForJSON(unitPrice),
+                totalPrice: escapeForJSON(totalPrice)
+            });
+        });
+
+        let jsonString = JSON.stringify(jsonItems);
+        document.getElementById("pSalesItems").value = jsonString;
+
+        console.log("Submitting JSON:", jsonString); // For debugging
+
+        document.getElementById("previewForm").submit();
+    }
+    // Initialize on page load
+    window.onload = initPage;
+</script>
