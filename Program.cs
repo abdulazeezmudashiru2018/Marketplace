@@ -8,14 +8,14 @@ namespace MarketPlace
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+            builder.WebHost.UseUrls($"http://*:{port}");
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<MarketPlaceDbContext>(options =>
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("DefaultConnection")
-                ));
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             var app = builder.Build();
 
@@ -36,6 +36,12 @@ namespace MarketPlace
                 name: "default",
                 pattern: "{controller=LandingPage}/{action=Index}/{id?}")
                 .WithStaticAssets();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<MarketPlaceDbContext>();
+                db.Database.Migrate(); // Creates tables automatically
+            }
 
             app.Run();
         }

@@ -13,7 +13,7 @@ namespace MarketPlace.Controllers
             _db = db;
         }
 
-        // Page showing list of unique customers
+       
         public IActionResult Index()
         {
             var customers = _db.SalesHistories

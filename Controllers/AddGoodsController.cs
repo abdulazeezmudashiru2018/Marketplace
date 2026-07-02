@@ -60,7 +60,7 @@ namespace MarketPlace.Controllers
                 product.ProductName = ProductName;
                 product.ProductPrice = ProductPrice;
 
-                // Note: image is left unchanged so it isn't lost
+               
                 _context.SaveChanges();
             }
 
