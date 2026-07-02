@@ -14,9 +14,25 @@ namespace MarketPlace
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddDbContext<MarketPlaceDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // Get connection string and convert URL format if needed
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+            if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
+            {
+                // Convert postgresql:// URL format to key=value format
+                var uri = new Uri(connectionString);
+                var userInfo = uri.UserInfo.Split(':');
+
+                connectionString = $"Host={uri.Host};" +
+                                   $"Port={(uri.Port > 0 ? uri.Port : 5432)};" +
+                                   $"Database={uri.AbsolutePath.TrimStart('/')};" +
+                                   $"Username={userInfo[0]};" +
+                                   $"Password={userInfo[1]};" +
+                                   $"SSL Mode=Require;Trust Server Certificate=true";
+            }
+
+            builder.Services.AddDbContext<MarketPlaceDbContext>(options =>
+                options.UseNpgsql(connectionString));
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
