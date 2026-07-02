@@ -22,13 +22,18 @@
             <p class="mb-1">@Model.Email</p>
             <p class="mb-3">@Model.Address, @Model.City @Model.Zip</p>
             <h6 class="text-muted">Payment</h6>
+            <div class="table-responsive">
             <table class="table table-sm">
                 <tr><td>Method</td><td class="text-end fw-semibold">@Model.Payment</td></tr>
                 <tr><td>Reference</td><td class="text-end">@(string.IsNullOrEmpty(Model.PaymentReference) ? "-" : Model.PaymentReference)</td></tr>
                 <tr><td>Date</td><td class="text-end">@Model.CreatedAt.ToString("dd MMM yyyy, h:mm tt")</td></tr>
             </table>
             <h6 class="text-muted mt-3">Items</h6>
+            </<div>
+
+           <div class="table-responsive">
             <table class="table table-sm">
+        
                 <thead>
                     <tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Price</th><th class="text-end">Total</th></tr>
                 </thead>
@@ -44,12 +49,16 @@
                     }
                 </tbody>
             </table>
+            </<div>
+
+         <div class="table-responsive">
             <table class="table table-sm">
                 <tr><td>Subtotal</td><td class="text-end">₦@Model.Subtotal.ToString("N2")</td></tr>
                 <tr><td>Shipping</td><td class="text-end">₦@Model.Shipping.ToString("N2")</td></tr>
                 <tr><td>Tax</td><td class="text-end">₦@Model.Tax.ToString("N2")</td></tr>
                 <tr class="fw-bold fs-5"><td>Total</td><td class="text-end">₦@Model.Total.ToString("N2")</td></tr>
             </table>
+          </div>
             @if (!Model.IsPaid && Model.Payment == "Bank Transfer")
             {
                 <form asp-controller="Order" asp-action="MarkPaid" asp-route-id="@Model.Id" method="post" class="mt-3">

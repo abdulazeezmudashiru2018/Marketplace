@@ -45,6 +45,7 @@
                     <!-- ITEMS TABLE -->
                     @if (!string.IsNullOrEmpty(receipt.SalesItemsJson))
                     {
+                        <div class="table-responsive">
                         <table class="table table-sm table-bordered">
                             <thead class="table-light">
                                 <tr>
@@ -57,7 +58,7 @@
                                 <tr><td colspan="3" class="text-center py-3"><span class="spinner-border spinner-border-sm"></span> Loading items...</td></tr>
                             </tbody>
                         </table>
-
+                      </div>
                         /*
                            ✅ SAFE PARSING SCRIPT - Handles all encoding issues
                            Using IHtmlHelper to properly encode JSON for JS context

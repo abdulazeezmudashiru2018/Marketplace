@@ -13,6 +13,7 @@
             <p class="mb-1"><strong>@Model.FullName</strong> (@Model.Email)</p>
             <p class="mb-3">@Model.Address, @Model.City @Model.Zip</p>
             <h6 class="text-muted">Cart Items</h6>
+         <div class="table-responsive">
             <table class="table align-middle">
                 <thead class="table-light">
                     <tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Unit Price</th><th class="text-end">Subtotal</th></tr>
@@ -29,6 +30,7 @@
                     }
                 </tbody>
             </table>
+          </<div>
             <div class="d-flex justify-content-between border-top pt-2">
                 <span class="text-muted">Subtotal</span><span>₦@Model.Subtotal.ToString("N2")</span>
             </div>

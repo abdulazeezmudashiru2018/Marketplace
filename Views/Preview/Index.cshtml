@@ -49,13 +49,15 @@
         <strong>THANK YOU</strong>
     </div>
 </div>
-
+<!-- ⭐ Updated button layout for mobile -->
 <div class="button-area">
-    <div class="text-center">
-        <button onclick="goBackToSales()" class="btn btn-secondary">Back</button>
+    <div class="d-flex flex-column flex-md-row justify-content-center gap-2 p-3">
 
-        <!-- Form to submit receipt to database -->
-        <form asp-controller="Sales" asp-action="SaveReceipt" method="post">
+        <button onclick="goBackToSales()" class="btn btn-secondary">
+            ← Back
+        </button>
+
+        <form asp-controller="Sales" asp-action="SaveReceipt" method="post" class="d-inline">
             <input type="hidden" name="CustomerName" value="@Model.CustomerName" />
             <input type="hidden" name="CustomerPhone" value="@Model.CustomerPhone" />
             <input type="hidden" name="CustomerAddress" value="@Model.CustomerAddress" />
@@ -63,14 +65,17 @@
             <input type="hidden" name="DateTime" value="@Model.DateTime" />
             <input type="hidden" name="GrandTotal" value="@Model.GrandTotal" />
             <input type="hidden" name="AmountInWords" value="@Model.AmountInWords" />
+            <input type="hidden" id="pSalesItems" name="SalesItemsJson" value="@Model.SalesItemsJson" />
 
-            <!-- Pass the pre-validated variable -->
-            <input type="hidden" id="pSalesItems" name="SalesItemsJson" value="@salesItemsData" />
-
-            <button type="submit" class="btn btn-success">Save</button>
+            <button type="submit" class="btn btn-success w-100">
+                💾 Save
+            </button>
         </form>
 
-        <button onclick="window.print()" class="btn btn-primary">Print</button>
+        <button onclick="window.print()" class="btn btn-primary">
+            🖨️ Print
+        </button>
+
     </div>
 </div>
 
@@ -92,6 +97,7 @@
 
         if (Array.isArray(items) && items.length > 0) {
             let html = `
+            <div class="table-responsive">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -120,6 +126,7 @@
             });
 
             html += "</tbody></table>";
+            </div
             document.getElementById("itemsArea").innerHTML = html;
         } else {
             document.getElementById("itemsArea").innerHTML = '<p class="text-muted">No items found.</p>';
