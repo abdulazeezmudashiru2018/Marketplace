@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace MarketPlace.Models
 {
@@ -12,18 +13,18 @@ namespace MarketPlace.Models
 
         public DbSet<Product> Products { get; set; }
 
-
         // Added so checkout can save orders
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
 
-
-        // ADD THIS LINE 👇
+        // Sales History
         public DbSet<SalesHistory> SalesHistories { get; set; }
 
+        // This prevents the PendingModelChangesWarning crash on Render
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(warnings =>
+                warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        }
     }
-
 }
-
-
-
